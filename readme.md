@@ -1,5 +1,12 @@
 ## Build a Basic ML Pipeline with SageMaker Pipeline and CodePipeline
 
+## References
+
+- [sagemaker project ci-cd](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-projects-whatis.html)
+- [sagemaker deinfe a pipeline](https://docs.aws.amazon.com/sagemaker/latest/dg/define-pipeline.html)
+- [safe deploy model](https://github.com/aws-samples/amazon-sagemaker-safe-deployment-pipeline)
+- [sagemaker immerseion day](https://catalog.us-east-1.prod.workshops.aws/workshops/63069e26-921c-4ce1-9cc7-dd882ff62575/en-US/lab6)
+
 ## SageMaker Pipeline
 
 The following code hello-sagemaker-workflow.py creates a sagemaker pipeline or workflows. It consits of multiple steps/functions.
@@ -396,10 +403,3 @@ const pipeline = new aws_codepipeline.Pipeline(
 - Add model evaluation and condition before deploy
 - Add manual approval and email notification
 - Add sagemaker endpoint monitoring
-
-## References
-
-- [sagemaker project ci-cd](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-projects-whatis.html)
-- [sagemaker deinfe a pipeline](https://docs.aws.amazon.com/sagemaker/latest/dg/define-pipeline.html)
-- [safe deploy model](https://github.com/aws-samples/amazon-sagemaker-safe-deployment-pipeline)
-- [sagemaker immerseion day](https://catalog.us-east-1.prod.workshops.aws/workshops/63069e26-921c-4ce1-9cc7-dd882ff62575/en-US/lab6)
