@@ -19,8 +19,7 @@ from sagemaker.workflow.lambda_step import Lambda, LambdaStep
 
 
 # sagemaker parameters
-# role = os.environ['SAGEMAKER_ROLE']
-role = "arn:aws:iam::392194582387:role/RoleForNoteBook"
+role = os.environ['SAGEMAKER_ROLE']
 session = sagemaker.Session()
 default_bucket = session.default_bucket()
 session = PipelineSession()
