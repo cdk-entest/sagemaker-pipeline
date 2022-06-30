@@ -1,6 +1,7 @@
 ## Build a Basic ML Pipeline with SageMaker Pipeline and CodePipeline
 
-![aws_devops-sagemaker drawio(3)](https://user-images.githubusercontent.com/20411077/176663901-07438dc2-8263-4854-a3a5-f4e7f4a78f65.png)
+![aws_devops-sagemaker drawio(4)](https://user-images.githubusercontent.com/20411077/176665687-efccdc2c-6003-4d25-ae8c-7ab80a9f656c.png)
+
 
 ## References
 
@@ -8,6 +9,7 @@
 - [sagemaker deinfe a pipeline](https://docs.aws.amazon.com/sagemaker/latest/dg/define-pipeline.html)
 - [safe deploy model](https://github.com/aws-samples/amazon-sagemaker-safe-deployment-pipeline)
 - [sagemaker immerseion day](https://catalog.us-east-1.prod.workshops.aws/workshops/63069e26-921c-4ce1-9cc7-dd882ff62575/en-US/lab6)
+- [sagemaker studio lab free](https://studiolab.sagemaker.aws/)
 
 ## SageMaker Pipeline
 
