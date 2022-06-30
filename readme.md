@@ -1,6 +1,6 @@
 ## Build a Basic ML Pipeline with SageMaker Pipeline and CodePipeline
 
-![aws_devops-sagemaker drawio(1)](https://user-images.githubusercontent.com/20411077/176663055-4376d59e-dc85-4af8-a1d7-66c956cb8a38.png)
+![aws_devops-sagemaker drawio(3)](https://user-images.githubusercontent.com/20411077/176663901-07438dc2-8263-4854-a3a5-f4e7f4a78f65.png)
 
 ## References
 
