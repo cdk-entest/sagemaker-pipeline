@@ -135,7 +135,7 @@ def create_model_batch(step_train: TrainingStep):
     return step_create_model
 ```
 
-4. Ereate a lambda function to save modelName to parameter store.
+4. Create a lambda function to save modelName to parameter store.
 
 ```tsx
 export class LambdaRecordModelName extends Stack {
