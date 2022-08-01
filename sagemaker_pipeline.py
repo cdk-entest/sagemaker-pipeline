@@ -19,7 +19,7 @@ from sagemaker.workflow.lambda_step import Lambda, LambdaStep
 
 
 # sagemaker parameters
-role = os.environ['SAGEMAKER_ROLE']
+role = os.environ["SAGEMAKER_ROLE"]
 session = sagemaker.Session()
 default_bucket = session.default_bucket()
 session = PipelineSession()
@@ -31,29 +31,20 @@ batch_data_uri = f"s3://{default_bucket}/abalone/abalone-dataset-batch"
 
 # pipeline parameters
 processing_instance_count = ParameterInteger(
-    name="ProcessingInstanceCount",
-    default_value=1
+    name="ProcessingInstanceCount", default_value=1
 )
 
 training_instance_count = ParameterInteger(
-    name="TrainingInstanceCount",
-    default_value=1
+    name="TrainingInstanceCount", default_value=1
 )
 
 model_approval_status = ParameterString(
-    name="ModelApprovalStatus",
-    default_value="PendingManualApproval"
+    name="ModelApprovalStatus", default_value="PendingManualApproval"
 )
 
-input_data = ParameterString(
-    name="InputData",
-    default_value=input_data_uri
-)
+input_data = ParameterString(name="InputData", default_value=input_data_uri)
 
-batch_data = ParameterString(
-    name="BatchData",
-    default_value=batch_data_uri
-)
+batch_data = ParameterString(name="BatchData", default_value=batch_data_uri)
 
 
 def create_process_step() -> ProcessingStep:
@@ -65,15 +56,14 @@ def create_process_step() -> ProcessingStep:
         instance_type="ml.m5.xlarge",
         instance_count=processing_instance_count,
         base_job_name="sklearn-abalone-process",
-        role=role
+        role=role,
     )
     step_process = ProcessingStep(
         name="AbaloneProcess",
         processor=sklearn_processor,
         inputs=[
             ProcessingInput(
-                source=input_data_uri,
-                destination="/opt/ml/processing/input"
+                source=input_data_uri, destination="/opt/ml/processing/input"
             ),
         ],
         outputs=[
@@ -82,15 +72,11 @@ def create_process_step() -> ProcessingStep:
                 source="/opt/ml/processing/train",
             ),
             ProcessingOutput(
-                output_name="validation",
-                source="/opt/ml/processing/validation"
+                output_name="validation", source="/opt/ml/processing/validation"
             ),
-            ProcessingOutput(
-                output_name="test",
-                source="/opt/ml/processing/test"
-            )
+            ProcessingOutput(output_name="test", source="/opt/ml/processing/test"),
         ],
-        code="preprocessing.py"
+        code="preprocessing.py",
     )
     return step_process
 
@@ -104,14 +90,14 @@ def create_training_step(s3_train_data, s3_validation_data):
         region="ap-southeast-1",
         version="1.0-1",
         py_version="py3",
-        instance_type="ml.m5.xlarge"
+        instance_type="ml.m5.xlarge",
     )
     xgb_train = Estimator(
         image_uri=image_uri,
         instance_type="ml.m5.xlarge",
         instance_count=training_instance_count,
         output_path=model_path,
-        role=role
+        role=role,
     )
     xgb_train.set_hyperparameters(
         objective="reg:linear",
@@ -121,21 +107,17 @@ def create_training_step(s3_train_data, s3_validation_data):
         gamma=4,
         min_child_weight=6,
         subsample=0.7,
-        silent=0
+        silent=0,
     )
     step_train = TrainingStep(
         name="AbaloneTrain",
         estimator=xgb_train,
         inputs={
-            "train": TrainingInput(
-                s3_data=s3_train_data,
-                content_type="text/csv"
-            ),
+            "train": TrainingInput(s3_data=s3_train_data, content_type="text/csv"),
             "validation": TrainingInput(
-                s3_data=s3_validation_data,
-                content_type="text/csv"
-            )
-        }
+                s3_data=s3_validation_data, content_type="text/csv"
+            ),
+        },
     )
     return step_train
 
@@ -150,20 +132,17 @@ def create_model_batch(step_train: TrainingStep):
             region="ap-southeast-1",
             version="1.0-1",
             py_version="py3",
-            instance_type="ml.m5.xlarge"
+            instance_type="ml.m5.xlarge",
         ),
         model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
         sagemaker_session=session,
-        role=role
+        role=role,
     )
     inputs = sagemaker.inputs.CreateModelInput(
-        instance_type="ml.m5.large",
-        accelerator_type="ml.eia1.medium"
+        instance_type="ml.m5.large", accelerator_type="ml.eia1.medium"
     )
     step_create_model = sagemaker.workflow.steps.CreateModelStep(
-        name="AbaloneCreateModel",
-        model=model,
-        inputs=inputs
+        name="AbaloneCreateModel", model=model, inputs=inputs
     )
     return step_create_model
 
@@ -176,11 +155,9 @@ def create_lambda_step(model_name: str) -> LambdaStep:
         name="LambdaRecordModelNameToParameterStore",
         lambda_func=Lambda(
             function_arn="arn:aws:lambda:ap-southeast-1:392194582387:function:RecordModelName",
-            session=session
+            session=session,
         ),
-        inputs={
-            "model_name": model_name
-        }
+        inputs={"model_name": model_name},
     )
     return lambda_step
 
@@ -194,16 +171,16 @@ def create_pipeline():
     # training step
     training_step = create_training_step(
         s3_train_data=processing_step.properties.ProcessingOutputConfig.Outputs[
-            "train"].S3Output.S3Uri,
+            "train"
+        ].S3Output.S3Uri,
         s3_validation_data=processing_step.properties.ProcessingOutputConfig.Outputs[
-            "validation"].S3Output.S3Uri,
+            "validation"
+        ].S3Output.S3Uri,
     )
     # create model for batch transform
     model_step = create_model_batch(step_train=training_step)
     # lambda step
-    lambda_step = create_lambda_step(
-        model_name=model_step.properties.ModelName
-    )
+    lambda_step = create_lambda_step(model_name=model_step.properties.ModelName)
     # sagemaker pipeline
     ex_pipeline = Pipeline(
         name="AbalonePipelineTestPrintName",
@@ -212,10 +189,10 @@ def create_pipeline():
             training_instance_count,
             model_approval_status,
             input_data,
-            batch_data
+            batch_data,
         ],
         steps=[processing_step, training_step, model_step, lambda_step],
-        sagemaker_session=session
+        sagemaker_session=session,
     )
     return ex_pipeline
 
@@ -226,8 +203,9 @@ def export_pipeline(sg_pipeline: Pipeline):
     """
     # generate template json
     with open("pipeline_template.json", "w", encoding="utf-8") as file:
-        json.dump(json.loads(sg_pipeline.definition()),
-                  file, ensure_ascii=False, indent=4)
+        json.dump(
+            json.loads(sg_pipeline.definition()), file, ensure_ascii=False, indent=4
+        )
 
 
 def run_pipeline(sg_pipeline: Pipeline) -> None:

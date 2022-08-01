@@ -1,3 +1,8 @@
+"""
+haimtran 01 AUG 2022 
+preprocessing data before training model
+"""
+
 import argparse
 import os
 import requests
@@ -31,7 +36,7 @@ feature_columns_dtype = {
     "whole_weight": np.float64,
     "shucked_weight": np.float64,
     "viscera_weight": np.float64,
-    "shell_weight": np.float64
+    "shell_weight": np.float64,
 }
 label_column_dtype = {"rings": np.float64}
 
@@ -45,20 +50,20 @@ def merge_two_dicts(x, y):
 if __name__ == "__main__":
     base_dir = "/opt/ml/processing"
 
-    os.system('ls /opt/ml/processing/')
+    os.system("ls /opt/ml/processing/")
 
     df = pd.read_csv(
         f"{base_dir}/input/abalone-dataset.csv",
         header=None,
         names=feature_columns_names + [label_column],
-        dtype=merge_two_dicts(feature_columns_dtype, label_column_dtype)
+        dtype=merge_two_dicts(feature_columns_dtype, label_column_dtype),
     )
     numeric_features = list(feature_columns_names)
     numeric_features.remove("sex")
     numeric_transformer = Pipeline(
         steps=[
             ("imputer", SimpleImputer(strategy="median")),
-            ("scaler", StandardScaler())
+            ("scaler", StandardScaler()),
         ]
     )
 
@@ -66,14 +71,14 @@ if __name__ == "__main__":
     categorical_transformer = Pipeline(
         steps=[
             ("imputer", SimpleImputer(strategy="constant", fill_value="missing")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore"))
+            ("onehot", OneHotEncoder(handle_unknown="ignore")),
         ]
     )
 
     preprocess = ColumnTransformer(
         transformers=[
             ("num", numeric_transformer, numeric_features),
-            ("cat", categorical_transformer, categorical_features)
+            ("cat", categorical_transformer, categorical_features),
         ]
     )
 
@@ -84,8 +89,10 @@ if __name__ == "__main__":
     X = np.concatenate((y_pre, X_pre), axis=1)
 
     np.random.shuffle(X)
-    train, validation, test = np.split(X, [int(.7 * len(X)), int(.85 * len(X))])
+    train, validation, test = np.split(X, [int(0.7 * len(X)), int(0.85 * len(X))])
 
     pd.DataFrame(train).to_csv(f"{base_dir}/train/train.csv", header=False, index=False)
-    pd.DataFrame(validation).to_csv(f"{base_dir}/validation/validation.csv", header=False, index=False)
+    pd.DataFrame(validation).to_csv(
+        f"{base_dir}/validation/validation.csv", header=False, index=False
+    )
     pd.DataFrame(test).to_csv(f"{base_dir}/test/test.csv", header=False, index=False)

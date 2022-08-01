@@ -7,14 +7,19 @@ import {
   aws_codepipeline,
   aws_codepipeline_actions,
   aws_iam,
+  aws_lambda,
   Stack,
   StackProps,
 } from "aws-cdk-lib";
+import { Effect } from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
+import * as fs from "fs";
+import * as path from "path";
 
 interface CicdPipelineProps extends StackProps {
   codeStartId: string;
   sageMakerRole: string;
+  lambdaArn: string;
 }
 
 export class CicdPipeline extends Stack {
@@ -71,13 +76,15 @@ export class CicdPipeline extends Stack {
             SAGEMAKER_ROLE: {
               value: props.sageMakerRole,
             },
+            LAMBDA_ARN: {
+              value: props.lambdaArn,
+            },
           },
         },
         buildSpec: aws_codebuild.BuildSpec.fromObject({
           version: "0.2",
           phases: {
             install: {
-              // 'runtime-versions': {python: 3.8},
               commands: ["pip install -r requirements.txt"],
             },
             build: {
@@ -167,5 +174,33 @@ export class CicdPipeline extends Stack {
         ],
       }
     );
+  }
+}
+
+export class LambdaRecordModelName extends Stack {
+  public readonly lambadArn: string;
+  constructor(scope: Construct, id: string, props: StackProps) {
+    super(scope, id, props);
+
+    const func = new aws_lambda.Function(this, "LambdaRecordModelName", {
+      functionName: "LambdaRecordModeleName",
+      code: aws_lambda.Code.fromInline(
+        fs.readFileSync(path.join(__dirname, "./../lambda/index.py"), {
+          encoding: "utf-8",
+        })
+      ),
+      runtime: aws_lambda.Runtime.PYTHON_3_8,
+      handler: "index.handler",
+    });
+
+    func.addToRolePolicy(
+      new aws_iam.PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ["ssm:*"],
+        resources: ["*"],
+      })
+    );
+
+    this.lambadArn = func.functionArn;
   }
 }
