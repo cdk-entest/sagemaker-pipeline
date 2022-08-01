@@ -14,6 +14,7 @@ import { Construct } from "constructs";
 
 interface CicdPipelineProps extends StackProps {
   codeStartId: string;
+  sageMakerRole: string;
 }
 
 export class CicdPipeline extends Stack {
@@ -66,6 +67,11 @@ export class CicdPipeline extends Stack {
           privileged: true,
           buildImage: aws_codebuild.LinuxBuildImage.STANDARD_5_0,
           computeType: aws_codebuild.ComputeType.MEDIUM,
+          environmentVariables: {
+            SAGEMAKER_ROLE: {
+              value: props.sageMakerRole,
+            },
+          },
         },
         buildSpec: aws_codebuild.BuildSpec.fromObject({
           version: "0.2",
@@ -139,6 +145,12 @@ export class CicdPipeline extends Stack {
                 project: sageMakerBuild,
                 input: sourceOutput,
                 outputs: [sageMakerBuildOutput],
+                environmentVariables: {
+                  SAGEMAKER_ROLE: {
+                    value: props.sageMakerRole,
+                    type: aws_codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+                  },
+                },
                 runOrder: 1,
               }),
             ],
