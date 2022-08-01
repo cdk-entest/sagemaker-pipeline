@@ -68,7 +68,7 @@ export class CicdPipeline extends Stack {
               commands: ["pip install -r requirements.txt"],
             },
             build: {
-              commands: ["python hello-sagemaker-workflow.py"],
+              commands: ["python sagemaker_pipeline.py"],
             },
           },
         }),
