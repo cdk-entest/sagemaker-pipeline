@@ -9,4 +9,6 @@ const app = new cdk.App();
 new CdkModelDeployStack(app, "CdkModelDeployStack", {});
 
 // cicd pipeline stack
-new CicdPipeline(app, "CiCdPipelineForSageMaker", {});
+new CicdPipeline(app, "CiCdPipelineForSageMaker", {
+  codeStartId: "f8487d2f-fbf7-4604-8d4c-e672b7d38cf4",
+});

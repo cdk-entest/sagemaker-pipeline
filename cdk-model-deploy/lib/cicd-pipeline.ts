@@ -1,6 +1,9 @@
+// haimtran 01 AUG 2022
+// 1. connect to GitHub
+// 2. build sagemaker pipeline using stepfunctions
+
 import {
   aws_codebuild,
-  aws_codecommit,
   aws_codepipeline,
   aws_codepipeline_actions,
   aws_iam,
@@ -9,15 +12,19 @@ import {
 } from "aws-cdk-lib";
 import { Construct } from "constructs";
 
+interface CicdPipelineProps extends StackProps {
+  codeStartId: string;
+}
+
 export class CicdPipeline extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: Construct, id: string, props: CicdPipelineProps) {
     super(scope, id, props);
 
-    // source code
-    const repo = aws_codecommit.Repository.fromRepositoryName(
-      this,
-      "HelloSageMakerPipeline",
-      "HelloSageMakerPipeline"
+    // artifact
+    const sourceOutput = new aws_codepipeline.Artifact("SourceOutput");
+    const cdkBuildOutput = new aws_codepipeline.Artifact("CdkBuildOutput");
+    const sageMakerBuildOutput = new aws_codepipeline.Artifact(
+      "SageMakerBuildOutput"
     );
 
     // codebuild cdk synthesize sagemaker endpoint template
@@ -92,13 +99,6 @@ export class CicdPipeline extends Stack {
       })
     );
 
-    // artifact store
-    const sourceOutput = new aws_codepipeline.Artifact("SourceOutput");
-    const cdkBuildOutput = new aws_codepipeline.Artifact("CdkBuildOutput");
-    const sageMakerBuildOutput = new aws_codepipeline.Artifact(
-      "SageMakerBuildOutput"
-    );
-
     // codepipeline
     const pipeline = new aws_codepipeline.Pipeline(
       this,
@@ -109,9 +109,12 @@ export class CicdPipeline extends Stack {
           {
             stageName: "SourceStage",
             actions: [
-              new aws_codepipeline_actions.CodeCommitSourceAction({
-                actionName: "CodeCommit",
-                repository: repo,
+              new aws_codepipeline_actions.CodeStarConnectionsSourceAction({
+                actionName: "Github",
+                owner: "entest-hai",
+                repo: "sagemaker-pipeline",
+                branch: "stepfunctions",
+                connectionArn: `arn:aws:codestar-connections:${this.region}:${this.account}:connection/${props.codeStartId}`,
                 output: sourceOutput,
               }),
             ],
