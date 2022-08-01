@@ -154,7 +154,7 @@ def create_lambda_step(model_name: str) -> LambdaStep:
     lambda_step = LambdaStep(
         name="LambdaRecordModelNameToParameterStore",
         lambda_func=Lambda(
-            function_arn="arn:aws:lambda:ap-southeast-1:392194582387:function:RecordModelName",
+            function_arn=os.environ["LAMBDA_ARN"],
             session=session,
         ),
         inputs={"model_name": model_name},

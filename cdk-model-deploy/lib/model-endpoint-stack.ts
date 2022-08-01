@@ -5,7 +5,7 @@ export class CdkModelDeployStack extends Stack {
   constructor(scope: Construct, id: string, props: StackProps) {
     super(scope, id, props);
 
-    // get model name from parameter store 
+    // get model name from parameter store
     const modelName = aws_ssm.StringParameter.fromStringParameterName(
       this,
       "PostFixModelNameConfigName",
