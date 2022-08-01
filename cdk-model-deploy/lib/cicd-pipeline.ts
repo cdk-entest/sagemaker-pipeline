@@ -145,12 +145,6 @@ export class CicdPipeline extends Stack {
                 project: sageMakerBuild,
                 input: sourceOutput,
                 outputs: [sageMakerBuildOutput],
-                environmentVariables: {
-                  SAGEMAKER_ROLE: {
-                    value: props.sageMakerRole,
-                    type: aws_codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-                  },
-                },
                 runOrder: 1,
               }),
             ],
