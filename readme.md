@@ -2,7 +2,6 @@
 
 ![aws_devops-sagemaker drawio(4)](https://user-images.githubusercontent.com/20411077/176665687-efccdc2c-6003-4d25-ae8c-7ab80a9f656c.png)
 
-
 ## References
 
 - [sagemaker project ci-cd](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-projects-whatis.html)
@@ -136,29 +135,41 @@ def create_model_batch(step_train: TrainingStep):
     return step_create_model
 ```
 
-4. create a lambda step to save modelName to parameter store. Each time the CodePipeline run, we need to pass the latest model name into the cloudformation template to deploy the sagemaker endpoint with the lasest model. Here, I use a Lambda step to do it.
+4. Ereate a lambda function to save modelName to parameter store.
 
-```python
-def create_lambda_step(model_name: str) -> LambdaStep:
-    """
-    create a lambda step
-    """
-    lambda_step = LambdaStep(
-        name="LambdaRecordModelNameToParameterStore",
-        lambda_func=Lambda(
-            function_arn="arn:aws:lambda:${REGION}:${ACCOUNT_ID}:function:RecordModelName",
-            session=session
-        ),
-        inputs={
-            "model_name": model_name
-        }
-    )
-    return lambda_step
+```tsx
+export class LambdaRecordModelName extends Stack {
+  public readonly lambadArn: string;
+  constructor(scope: Construct, id: string, props: StackProps) {
+    super(scope, id, props);
+
+    const func = new aws_lambda.Function(this, "LambdaRecordModelName", {
+      functionName: "LambdaRecordModelName",
+      code: aws_lambda.Code.fromInline(
+        fs.readFileSync(path.join(__dirname, "./../lambda/index.py"), {
+          encoding: "utf-8",
+        })
+      ),
+      runtime: aws_lambda.Runtime.PYTHON_3_8,
+      handler: "index.handler",
+    });
+
+    func.addToRolePolicy(
+      new aws_iam.PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ["ssm:*"],
+        resources: ["*"],
+      })
+    );
+
+    this.lambadArn = func.functionArn;
+  }
+}
 ```
 
-the lambda function handler. Please setup a role for the Lambda allowing writing to the parameter store.
+the lambda handler to write the sagemaker model name into ssm
 
-```python
+```py
 import json
 import boto3
 
@@ -178,10 +189,29 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'body': json.dumps('Hello from Lambda!')
     }
-
 ```
 
-5. create a sagemaker pipeline. Finally, we chain processing step, train step, model step, and lambda step into a sagemaker pipeline or workflow. It is possible to use stepfunctions instead of sagemaker pipeline here.
+5. Integrate the lambda as a lambad step into the sagemaker pipeline.
+
+```python
+def create_lambda_step(model_name: str) -> LambdaStep:
+    """
+    create a lambda step
+    """
+    lambda_step = LambdaStep(
+        name="LambdaRecordModelNameToParameterStore",
+        lambda_func=Lambda(
+            function_arn=os.environ['LAMBDA_ARN'],
+            session=session
+        ),
+        inputs={
+            "model_name": model_name
+        }
+    )
+    return lambda_step
+```
+
+6. create a sagemaker pipeline. Finally, we chain processing step, train step, model step, and lambda step into a sagemaker pipeline or workflow. It is possible to use stepfunctions instead of sagemaker pipeline here.
 
 ```python
 def create_pipeline():
@@ -242,21 +272,22 @@ const sageMakerBuildOutput = new aws_codepipeline.Artifact(
 );
 ```
 
-source code from codecommit
+source code from GitHub
 
 ```tsx
-// source code
-const repo = aws_codecommit.Repository.fromRepositoryName(
-  this,
-  "HelloSageMakerPipeline",
-  "HelloSageMakerPipeline"
-);
+new aws_codepipeline_actions.CodeStarConnectionsSourceAction({
+  actionName: "Github",
+  owner: "entest-hai",
+  repo: "sagemaker-pipeline",
+  branch: "stepfunctions",
+  connectionArn: `arn:aws:codestar-connections:${this.region}:${this.account}:connection/${props.codeStartId}`,
+  output: sourceOutput,
+}),
 ```
 
-a codebuild project to build the sagemaker pipeline
+a codebuild project to create and run the sagemaker pipeline
 
 ```tsx
-// codebuild sagemaker pipepline
 const sageMakerBuild = new aws_codebuild.PipelineProject(
   this,
   "BuildSageMakerModel",
@@ -266,16 +297,23 @@ const sageMakerBuild = new aws_codebuild.PipelineProject(
       privileged: true,
       buildImage: aws_codebuild.LinuxBuildImage.STANDARD_5_0,
       computeType: aws_codebuild.ComputeType.MEDIUM,
+      environmentVariables: {
+        SAGEMAKER_ROLE: {
+          value: props.sageMakerRole,
+        },
+        LAMBDA_ARN: {
+          value: props.lambdaArn,
+        },
+      },
     },
     buildSpec: aws_codebuild.BuildSpec.fromObject({
       version: "0.2",
       phases: {
         install: {
-          // 'runtime-versions': {python: 3.8},
           commands: ["pip install -r requirements.txt"],
         },
         build: {
-          commands: ["python hello-sagemaker-workflow.py"],
+          commands: ["python sagemaker_pipeline.py"],
         },
       },
     }),
@@ -283,10 +321,29 @@ const sageMakerBuild = new aws_codebuild.PipelineProject(
 );
 ```
 
+andd policy to allow the codebuild and run sagemaker
+
+```tsx
+sageMakerBuild.addToRolePolicy(
+  new aws_iam.PolicyStatement({
+    effect: aws_iam.Effect.ALLOW,
+    resources: ["*"],
+    actions: [
+      "sagemaker:*",
+      "s3:*",
+      "lambda:*",
+      "iam:GetRole",
+      "iam:PassRole",
+      "states:*",
+      "logs:*",
+    ],
+  })
+);
+```
+
 a codebuild project to build a template for deploying the sagemaker endpoint
 
 ```tsx
-// codebuild cdk synthesize sagemaker endpoint template
 const cdkBuildProject = new aws_codebuild.PipelineProject(
   this,
   "CdkBuildSageMakerEndpoint",
@@ -316,28 +373,7 @@ const cdkBuildProject = new aws_codebuild.PipelineProject(
 );
 ```
 
-add policy to the codebuild project
-
-```tsx
-// allow running sagemker
-sageMakerBuild.addToRolePolicy(
-  new aws_iam.PolicyStatement({
-    effect: aws_iam.Effect.ALLOW,
-    resources: ["*"],
-    actions: [
-      "sagemaker:*",
-      "s3:*",
-      "lambda:*",
-      "iam:GetRole",
-      "iam:PassRole",
-      "states:*",
-      "logs:*",
-    ],
-  })
-);
-```
-
-codepipeline
+the entire codepipeline
 
 ```tsx
 // codepipeline
@@ -350,9 +386,12 @@ const pipeline = new aws_codepipeline.Pipeline(
       {
         stageName: "SourceStage",
         actions: [
-          new aws_codepipeline_actions.CodeCommitSourceAction({
-            actionName: "CodeCommit",
-            repository: repo,
+          new aws_codepipeline_actions.CodeStarConnectionsSourceAction({
+            actionName: "Github",
+            owner: "entest-hai",
+            repo: "sagemaker-pipeline",
+            branch: "stepfunctions",
+            connectionArn: `arn:aws:codestar-connections:${this.region}:${this.account}:connection/${props.codeStartId}`,
             output: sourceOutput,
           }),
         ],
