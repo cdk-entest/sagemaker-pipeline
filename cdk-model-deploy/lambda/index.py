@@ -1,10 +1,9 @@
 """
 haimtran 01 AUG 2022
-lambda write to system parameter store
-record model name
-pipelines-y6tfth6zwzda-AbaloneCreateModel-CraPCbgDZF
+lambda write sagemaker model name to system parameter store
 """
 
+import json
 import boto3
 
 ssmClient = boto3.client("ssm")
@@ -12,15 +11,15 @@ ssmClient = boto3.client("ssm")
 
 def handler(event, context):
     """
-    update model name into system parameter store
+    write model name to ssm
     """
-    ssmClient.put_parameter(
-        Name="HelloModelNameSps",
-        Description="sagemaker model name",
-        Value="pipelines-y6tfth6zwzda-AbaloneCreateModel-CraPCbgDZF",
-        Overwrite=True,
-    )
-    return {"message": "hello"}
+    # parse model name
+    model_name = event["model_name"]
+    # ssm client
+    ssm = boto3.client("ssm")
+    # write model name to parameter store
+    ssm.put_parameter(Name="HelloModelNameSps", Value=model_name, Overwrite=True)
+    return {"statusCode": 200, "body": json.dumps("Hello from Lambda!")}
 
 
-handler(event={}, context={})
+# handler(event={}, context={})
