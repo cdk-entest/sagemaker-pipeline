@@ -1,14 +1,20 @@
-## Build a Basic ML Pipeline with SageMaker Pipeline and CodePipeline
+---
+title: Integrate SageMaker Pipeline and CodPipeline
+description: Build a simple ML pipeline with sagemaker pipeline and codepipeline
+author: haimtran
+publishedDate: 07/31/2022
+date: 2022-07-31
+---
+
+## Introduction
+
+Build a Basic ML Pipeline with SageMaker Pipeline and CodePipeline.
+
+Architecture
 
 ![aws_devops-sagemaker drawio(4)](https://user-images.githubusercontent.com/20411077/176665687-efccdc2c-6003-4d25-ae8c-7ab80a9f656c.png)
 
-## References
-
-- [sagemaker project ci-cd](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-projects-whatis.html)
-- [sagemaker deinfe a pipeline](https://docs.aws.amazon.com/sagemaker/latest/dg/define-pipeline.html)
-- [safe deploy model](https://github.com/aws-samples/amazon-sagemaker-safe-deployment-pipeline)
-- [sagemaker immerseion day](https://catalog.us-east-1.prod.workshops.aws/workshops/63069e26-921c-4ce1-9cc7-dd882ff62575/en-US/lab6)
-- [sagemaker studio lab free](https://studiolab.sagemaker.aws/)
+[GitHub](https://github.com/entest-hai/sagemaker-pipeline)
 
 ## SageMaker Pipeline
 
@@ -446,3 +452,11 @@ const pipeline = new aws_codepipeline.Pipeline(
 - Add model evaluation and condition before deploy
 - Add manual approval and email notification
 - Add sagemaker endpoint monitoring
+
+## References
+
+- [sagemaker project ci-cd](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-projects-whatis.html)
+- [sagemaker deinfe a pipeline](https://docs.aws.amazon.com/sagemaker/latest/dg/define-pipeline.html)
+- [safe deploy model](https://github.com/aws-samples/amazon-sagemaker-safe-deployment-pipeline)
+- [sagemaker immerseion day](https://catalog.us-east-1.prod.workshops.aws/workshops/63069e26-921c-4ce1-9cc7-dd882ff62575/en-US/lab6)
+- [sagemaker studio lab free](https://studiolab.sagemaker.aws/)
