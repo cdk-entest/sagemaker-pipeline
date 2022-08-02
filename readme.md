@@ -255,6 +255,53 @@ def create_pipeline():
     return ex_pipeline
 ```
 
+## Option 2. Stepfunctions Creates a ML Pipeline
+
+[stepfunctions_pipeline.py](https://github.com/entest-hai/sagemaker-pipeline/blob/stepfunctions/stepfunctions_pipeline.py) implements a ML pipeline by using stepfunctions.
+
+```py
+def create_workflow() -> stepfunctions.workflow.Workflow:
+    """
+    create a state machine for ml pipeline
+    """
+    # processing step
+    processing_step = create_process_step()
+    # training step
+    training_step = create_training_step()
+    # create model step
+    model_step = create_model_batch(training_step=training_step)
+    # lambda step
+    lambda_step = create_lambda_step(model_name=execution_input["ModelName"])
+    # workflow
+    definition = stepfunctions.steps.Chain(
+        [processing_step, training_step, model_step, lambda_step]
+    )
+    workflow = stepfunctions.workflow.Workflow(
+        name="StepFunctionWorkFlow",
+        definition=definition,
+        role=config["WORKFLOW_ROLE"],
+        execution_input=execution_input,
+    )
+    return workflow
+```
+
+Use ExecutionInput to dynamically pass jobName, ModelName
+
+```py
+execution_input = ExecutionInput(
+    schema={
+        "PreprocessingJobName": str,
+        "TrainingJobName": str,
+        "LambdaFunctionName": str,
+        "ModelName": str,
+    }
+)
+```
+
+Provide SAGEMAKER_ROLE and WORKFLOW_ROLE reference [HERE](https://github.com/aws/amazon-sagemaker-examples/blob/main/step-functions-data-science-sdk/automate_model_retraining_workflow/automate_model_retraining_workflow.ipynb)
+
+<img width="645" alt="Screen Shot 2022-08-02 at 09 40 08" src="https://user-images.githubusercontent.com/20411077/182280319-2c00835e-cebd-47a0-8925-379cb109afda.png" />
+
 ## CodePipeline
 
 We now build a normal codepipeline with stages.
@@ -443,53 +490,6 @@ const pipeline = new aws_codepipeline.Pipeline(
   }
 );
 ```
-
-## Option 2. Stepfunctions Creates a ML Pipeline
-
-[stepfunctions_pipeline.py](https://github.com/entest-hai/sagemaker-pipeline/blob/stepfunctions/stepfunctions_pipeline.py) implements a ML pipeline by using stepfunctions.
-
-```py
-def create_workflow() -> stepfunctions.workflow.Workflow:
-    """
-    create a state machine for ml pipeline
-    """
-    # processing step
-    processing_step = create_process_step()
-    # training step
-    training_step = create_training_step()
-    # create model step
-    model_step = create_model_batch(training_step=training_step)
-    # lambda step
-    lambda_step = create_lambda_step(model_name=execution_input["ModelName"])
-    # workflow
-    definition = stepfunctions.steps.Chain(
-        [processing_step, training_step, model_step, lambda_step]
-    )
-    workflow = stepfunctions.workflow.Workflow(
-        name="StepFunctionWorkFlow",
-        definition=definition,
-        role=config["WORKFLOW_ROLE"],
-        execution_input=execution_input,
-    )
-    return workflow
-```
-
-Use ExecutionInput to dynamically pass jobName, ModelName
-
-```py
-execution_input = ExecutionInput(
-    schema={
-        "PreprocessingJobName": str,
-        "TrainingJobName": str,
-        "LambdaFunctionName": str,
-        "ModelName": str,
-    }
-)
-```
-
-Provide SAGEMAKER_ROLE and WORKFLOW_ROLE reference [HERE](https://github.com/aws/amazon-sagemaker-examples/blob/main/step-functions-data-science-sdk/automate_model_retraining_workflow/automate_model_retraining_workflow.ipynb)
-
-<img width="645" alt="Screen Shot 2022-08-02 at 09 40 08" src="https://user-images.githubusercontent.com/20411077/182280319-2c00835e-cebd-47a0-8925-379cb109afda.png">
 
 ## Next Steps
 
