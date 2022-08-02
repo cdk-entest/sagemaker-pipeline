@@ -8,7 +8,10 @@ date: 2022-07-31
 
 ## Introduction
 
-Build a Basic ML Pipeline with SageMaker Pipeline and CodePipeline.
+Build a Basic ML Pipeline with SageMaker Pipeline and integrate with CodePipeline.
+
+- Option 1. Create a ML pipeline by sagemaker pipeline
+- Option 2. Create a ML pipeline by stepfunctions
 
 Architecture
 
