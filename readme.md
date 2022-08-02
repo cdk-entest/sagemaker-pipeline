@@ -445,7 +445,6 @@ const pipeline = new aws_codepipeline.Pipeline(
 ```
 
 ## Option 2. Stepfunctions Creates a ML Pipeline
-
 [stepfunctions_pipeline.py](https://github.com/entest-hai/sagemaker-pipeline/blob/stepfunctions/stepfunctions_pipeline.py) implements a ML pipeline by using stepfunctions.
 
 ```py
@@ -486,6 +485,8 @@ execution_input = ExecutionInput(
     }
 )
 ```
+
+<img width="645" alt="Screen Shot 2022-08-02 at 09 40 08" src="https://user-images.githubusercontent.com/20411077/182280319-2c00835e-cebd-47a0-8925-379cb109afda.png">
 
 ## Next Steps
 
