@@ -17,7 +17,7 @@ Architecture
 
 ![aws_devops-sagemaker drawio(4)](https://user-images.githubusercontent.com/20411077/176665687-efccdc2c-6003-4d25-ae8c-7ab80a9f656c.png)
 
-[GitHub](https://github.com/entest-hai/sagemaker-pipeline)
+[GitHub](https://github.com/entest-hai/sagemaker-pipeline/tree/stepfunctions)
 
 ## Option 1. SageMaker Pipeline
 
