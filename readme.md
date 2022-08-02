@@ -16,7 +16,7 @@ Architecture
 
 [GitHub](https://github.com/entest-hai/sagemaker-pipeline)
 
-## SageMaker Pipeline
+## Option 1. SageMaker Pipeline
 
 The sagemaker_pipeline.py creates a sagemaker pipeline. It consits of multiple steps/functions.
 
@@ -259,7 +259,7 @@ def create_pipeline():
 
 We now build a normal codepipeline with stages.
 
-- Stage 1. A codebuild to run the python hello-sagemaker-workflow.py to create a sagemaker pipeline and the model also.
+- Stage 1. A codebuild to run the python sagemaker_pipeline.py to create a sagemaker pipeline and the model also.
 - Stage 2. A codebuild to build a template for deploying a sagemker endpoint
 - Stage 3. A codedeploy to deploy (create or update) the template - sagemaker endpoint
 - Missing stages:
@@ -442,6 +442,49 @@ const pipeline = new aws_codepipeline.Pipeline(
     ],
   }
 );
+```
+
+## Option 2. Stepfunctions Creates a ML Pipeline
+
+[stepfunctions_pipeline.py](https://github.com/entest-hai/sagemaker-pipeline/blob/stepfunctions/stepfunctions_pipeline.py) implements a ML pipeline by using stepfunctions.
+
+```py
+def create_workflow() -> stepfunctions.workflow.Workflow:
+    """
+    create a state machine for ml pipeline
+    """
+    # processing step
+    processing_step = create_process_step()
+    # training step
+    training_step = create_training_step()
+    # create model step
+    model_step = create_model_batch(training_step=training_step)
+    # lambda step
+    lambda_step = create_lambda_step(model_name=execution_input["ModelName"])
+    # workflow
+    definition = stepfunctions.steps.Chain(
+        [processing_step, training_step, model_step, lambda_step]
+    )
+    workflow = stepfunctions.workflow.Workflow(
+        name="StepFunctionWorkFlow",
+        definition=definition,
+        role=config["WORKFLOW_ROLE"],
+        execution_input=execution_input,
+    )
+    return workflow
+```
+
+Use ExecutionInput to dynamically pass jobName, ModelName
+
+```py
+execution_input = ExecutionInput(
+    schema={
+        "PreprocessingJobName": str,
+        "TrainingJobName": str,
+        "LambdaFunctionName": str,
+        "ModelName": str,
+    }
+)
 ```
 
 ## Next Steps
