@@ -18,8 +18,8 @@ def handler(event, context):
     # ssm client
     ssm = boto3.client("ssm")
     # write model name to parameter store
-    ssm.put_parameter(Name="HelloModelNameSps", Value=model_name, Overwrite=True)
+    ssm.put_parameter(Name="HelloModelNameSps", Value=model_name, Overwrite=True,  Type='String')
     return {"statusCode": 200, "body": json.dumps("Hello from Lambda!")}
 
 
-# handler(event={}, context={})
+handler(event={"model_name": "example"}, context={})
