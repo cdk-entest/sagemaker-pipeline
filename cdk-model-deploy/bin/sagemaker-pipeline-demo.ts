@@ -15,8 +15,8 @@ const recordModelNameLambda = new LambdaRecordModelName(
 
 // cicd pipeline stack
 new CicdPipeline(app, "CiCdPipelineForSageMaker", {
-  codeStartId: "f8487d2f-fbf7-4604-8d4c-e672b7d38cf4",
-  sageMakerRole: `arn:aws:iam::${process.env.CDK_DEFAULT_ACCOUNT}:role/RoleForNoteBook`,
+  codeStartId: "531f066b-0e71-4549-90c9-97b036303ec0",
+  sageMakerRole: `arn:aws:iam::${process.env.CDK_DEFAULT_ACCOUNT}:role/RoleForDataScientistUserProfile`,
   lambdaArn: recordModelNameLambda.lambadArn,
 });
 
