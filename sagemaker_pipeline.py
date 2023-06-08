@@ -18,6 +18,10 @@ from sagemaker.model import Model
 from sagemaker.workflow.lambda_step import Lambda, LambdaStep
 
 
+# os.environ["SAGEMAKER_ROLE"] = "arn:aws:iam::848692205583:role/RoleForDataScientistUserProfile"
+# os.environ["LAMBDA_ARN"] = "arn:aws:lambda:ap-southeast-1:848692205583:function:LambdaRecordModelName"
+
+
 # sagemaker parameters
 role = os.environ["SAGEMAKER_ROLE"]
 session = sagemaker.Session()
@@ -220,7 +224,7 @@ def run_pipeline(sg_pipeline: Pipeline) -> None:
     # wait and print model name
     execution.wait()
     # print model name
-    print(execution.list_steps())
+    # print(execution.list_steps())
 
 
 if __name__ == "__main__":
