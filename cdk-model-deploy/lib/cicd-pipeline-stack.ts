@@ -10,6 +10,7 @@ import {
   Stack,
   StackProps,
 } from "aws-cdk-lib";
+import { Effect } from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
 
 interface CicdPipelineProps extends StackProps {
@@ -47,8 +48,7 @@ export class CicdPipeline extends Stack {
               commands: ["cd cdk-model-deploy", "npm install"],
             },
             build: {
-              // commands: ["npm run build", "npm run cdk synth -- -o dist"],
-              commands: ["echo things ok"],
+              commands: ["npm run build", "npm run cdk synth -- -o dist"],
             },
           },
           artifacts: {
@@ -121,9 +121,9 @@ export class CicdPipeline extends Stack {
             actions: [
               new aws_codepipeline_actions.CodeStarConnectionsSourceAction({
                 actionName: "Github",
-                owner: "entest-hai",
+                owner: "cdk-entest",
                 repo: "sagemaker-pipeline",
-                branch: "stepfunctions",
+                branch: "main",
                 connectionArn: `arn:aws:codestar-connections:${this.region}:${this.account}:connection/${props.codeStartId}`,
                 output: sourceOutput,
               }),
@@ -170,6 +170,58 @@ export class CicdPipeline extends Stack {
           },
         ],
       }
+    );
+  }
+}
+
+export class SageMakerRoleStack extends Stack {
+  public readonly role: aws_iam.Role;
+
+  constructor(scope: Construct, id: string, props: StackProps) {
+    super(scope, id, props);
+
+    this.role = new aws_iam.Role(this, "RoleForSageMakerFromCodeBuild", {
+      roleName: "RoleForSageMakerFromCodeBuild",
+      assumedBy: new aws_iam.ServicePrincipal("sagemaker.amazonaws.com"),
+    });
+
+    // sagemaker
+    this.role.addManagedPolicy(
+      aws_iam.ManagedPolicy.fromAwsManagedPolicyName(
+        "AmazonSageMakerFullAccess"
+      )
+    );
+
+    // cloudwatch
+    this.role.addManagedPolicy(
+      aws_iam.ManagedPolicy.fromAwsManagedPolicyName(
+        "CloudWatchEventsFullAccess"
+      )
+    );
+
+    // stepfunction
+    this.role.addManagedPolicy(
+      aws_iam.ManagedPolicy.fromAwsManagedPolicyName(
+        "AWSStepFunctionsFullAccess"
+      )
+    );
+
+    // lambda to invoke lambda stack
+    this.role.addToPolicy(
+      new aws_iam.PolicyStatement({
+        effect: Effect.ALLOW,
+        resources: ["*"],
+        actions: ["lambda:InvokeFunction"],
+      })
+    );
+
+    // access data s3
+    this.role.addToPolicy(
+      new aws_iam.PolicyStatement({
+        effect: Effect.ALLOW,
+        resources: ["*"],
+        actions: ["s3:*"],
+      })
     );
   }
 }

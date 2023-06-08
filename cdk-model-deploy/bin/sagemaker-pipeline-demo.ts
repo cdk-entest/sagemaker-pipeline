@@ -1,10 +1,16 @@
 #!/usr/bin/env node
 import * as cdk from "aws-cdk-lib";
 import { CdkModelDeployStack } from "../lib/model-endpoint-stack";
-import { CicdPipeline } from "../lib/cicd-pipeline-stack";
+import { CicdPipeline, SageMakerRoleStack } from "../lib/cicd-pipeline-stack";
 import { LambdaRecordModelName } from "../lib/lambda-record-model-name-stack";
 
+// codestart id to connect to github
+const codeStartId = "531f066b-0e71-4549-90c9-97b036303ec0";
+
 const app = new cdk.App();
+
+// sagemake role
+const sagemaker = new SageMakerRoleStack(app, "SageMakerRoleStack", {});
 
 // lambda record model name
 const recordModelNameLambda = new LambdaRecordModelName(
@@ -14,11 +20,14 @@ const recordModelNameLambda = new LambdaRecordModelName(
 );
 
 // cicd pipeline stack
-new CicdPipeline(app, "CiCdPipelineForSageMaker", {
-  codeStartId: "531f066b-0e71-4549-90c9-97b036303ec0",
-  sageMakerRole: `arn:aws:iam::${process.env.CDK_DEFAULT_ACCOUNT}:role/RoleForDataScientistUserProfile`,
+const pipeline = new CicdPipeline(app, "CiCdPipelineForSageMaker", {
+  codeStartId: codeStartId,
+  sageMakerRole: sagemaker.role.roleArn,
   lambdaArn: recordModelNameLambda.lambadArn,
 });
 
 // sagemaker endpoint stack
+// for pipeline deploy
 new CdkModelDeployStack(app, "CdkModelDeployStack", {});
+
+pipeline.addDependency(sagemaker);
