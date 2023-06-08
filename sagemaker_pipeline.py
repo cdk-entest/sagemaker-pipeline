@@ -224,7 +224,7 @@ def run_pipeline(sg_pipeline: Pipeline) -> None:
     # wait and print model name
     execution.wait()
     # print model name
-    # print(execution.list_steps())
+    print(execution.list_steps())
 
 
 if __name__ == "__main__":
