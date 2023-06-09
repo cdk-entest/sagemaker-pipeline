@@ -1,6 +1,7 @@
 """
 Hello SageMaker Pipeline
 Hai Tran 30 JUN 2022
+test update demo
 """
 
 import os
@@ -16,10 +17,6 @@ from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.pipeline_context import PipelineSession
 from sagemaker.model import Model
 from sagemaker.workflow.lambda_step import Lambda, LambdaStep
-
-
-# os.environ["SAGEMAKER_ROLE"] = "arn:aws:iam::848692205583:role/RoleForDataScientistUserProfile"
-# os.environ["LAMBDA_ARN"] = "arn:aws:lambda:ap-southeast-1:848692205583:function:LambdaRecordModelName"
 
 
 # sagemaker parameters
