@@ -444,6 +444,59 @@ const pipeline = new aws_codepipeline.Pipeline(
 );
 ```
 
+## Deployment
+
+- Step 1. setup the SageMaker IAM role
+- Step 2. upload the data to S3
+- Step 3. update the condestar id
+- Step 4. deploy the pipepline and skip the ModelDeployStack
+- Step 5. uncomment the ModelDeployStack and git push
+
+Step 1. Setup the IAM role for SageMaker. Below is the SageMakerRoleStack
+
+```ts
+// sagemaker
+this.role.addManagedPolicy(
+  aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonSageMakerFullAccess")
+);
+
+// cloudwatch
+this.role.addManagedPolicy(
+  aws_iam.ManagedPolicy.fromAwsManagedPolicyName("CloudWatchEventsFullAccess")
+);
+
+// stepfunction
+this.role.addManagedPolicy(
+  aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AWSStepFunctionsFullAccess")
+);
+
+// lambda to invoke lambda stack
+this.role.addToPolicy(
+  new aws_iam.PolicyStatement({
+    effect: Effect.ALLOW,
+    resources: ["*"],
+    actions: ["lambda:InvokeFunction"],
+  })
+);
+
+// access data s3
+this.role.addToPolicy(
+  new aws_iam.PolicyStatement({
+    effect: Effect.ALLOW,
+    resources: ["*"],
+    actions: ["s3:*"],
+  })
+);
+```
+
+Step 2. Upload the data to S3
+
+```bash
+aws s3 cp data/ s3:://{BUCKET}/abalone/ --recursive
+```
+
+Step 3, 4, 5.
+
 ## Next Steps
 
 - Try replacing sagemaker pipeline by stepfunctions to create the workflow
