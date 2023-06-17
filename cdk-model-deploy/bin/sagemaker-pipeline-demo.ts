@@ -5,7 +5,7 @@ import { CicdPipeline, SageMakerRoleStack } from "../lib/cicd-pipeline-stack";
 import { LambdaRecordModelName } from "../lib/lambda-record-model-name-stack";
 
 // codestart id to connect to github
-const codeStartId = "531f066b-0e71-4549-90c9-97b036303ec0";
+const codeStartId = "efbf9e3c-f0e0-476f-8416-462468c96ec6";
 
 const app = new cdk.App();
 
@@ -31,3 +31,4 @@ const pipeline = new CicdPipeline(app, "CiCdPipelineForSageMaker", {
 new CdkModelDeployStack(app, "CdkModelDeployStack", {});
 
 pipeline.addDependency(sagemaker);
+pipeline.addDependency(recordModelNameLambda);
