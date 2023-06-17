@@ -1,4 +1,9 @@
 #!/usr/bin/env node
+//=============================================================================
+// step 1. update the condestar id
+// step 2. deploy the  pipepline and skip the ModelDeployStack
+// step 3. uncomment the ModelDeployStack and git push
+//=============================================================================
 import * as cdk from "aws-cdk-lib";
 import { CdkModelDeployStack } from "../lib/model-endpoint-stack";
 import { CicdPipeline, SageMakerRoleStack } from "../lib/cicd-pipeline-stack";
